@@ -90,6 +90,41 @@ class SudokuBoard:
             count += 1
 
         return board_rm
+    
+    #called when user checks their answer, returns if board is valid
+    #returns true if and only if every cell is valid on the board and no cell is empty. return false otherwise.
+    #a placement is valid if: the char is unique in its row, col, and 3x3 region.
+    def valid_board(self, board):
+        for i in range(9):
+            row = set()
+            col = set()
+            block = set()
+            for j in range(9):
+                #check rows [i][j]
+                if board[i][j] in row or board[i][j] == "":
+                    return False
+                else:
+                    row.add(board[i][j])
+                
+                #check columns in same pass [j][i]
+                if board[j][i] in col:
+                    return False
+                else:
+                    col.add(board[j][i])
+
+                #check 3x3 region (9 regions total)
+                r = 3 * (i // 3) + (j // 3)
+                c = 3 * (i % 3) + (j % 3)
+                if board[r][c] in block:
+                    return False
+                if board[r][c] != "":
+                    block.add(board[r][c])
+        return True
+
+
+                
+
+
 
 # # test board generation!
 # puzzle_board = generate_board()
