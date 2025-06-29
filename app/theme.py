@@ -9,6 +9,7 @@ THEME = {
         "clear": "#C899F8",
         "birthday!_button": "#D8B9F8",
         "button_text": "#000000",
+        "wrong_popup": "#f5eac6",
         "opacity": "#5EAADD"
     },
     "dark": {
@@ -21,6 +22,7 @@ THEME = {
         "birthday!_button": "#8D75F8",
         "clear": "#191863",
         "button_text": "#ffffff",
+        "wrong_popup": "#211746",
         "opacity": "#49327E"
     }
 }

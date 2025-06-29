@@ -1,16 +1,23 @@
 import customtkinter as ctk
+import sys
+import os
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 from src.sudoku import SudokuBoard
 from theme import THEME
 from PIL import Image
 from customtkinter import CTkImage
+from cake import Cake
+from tkinter import Canvas, Tk, NW
+from PIL import ImageTk
 #for better styling/transparency
 import pywinstyles
 
+#TODO: configure on run -> menu app -> launch board/gameplay logic/struct
 class App(ctk.CTk):
     def __init__(self):
         super().__init__()
         #configure theme
-        self.theme_mode = "light"
+        self.theme_mode = "dark"
         self.colors = THEME[self.theme_mode]
 
         #generating solution board and puzzle board:
@@ -21,13 +28,17 @@ class App(ctk.CTk):
         self.title("Birthday Sudoku")
         self.geometry("1920x1080")
 
-        #bg image:
-        bg_img = CTkImage(Image.open(self.colors["backdrop"]), size=(1920,1080))
-        label = ctk.CTkLabel(self, image=bg_img, text="")
-        label.place(relx=0, rely=0, relwidth=1, relheight=1)
+        #canvas for layering
+        self.canvas = Canvas(self, width=1920, height=1080, highlightthickness=0)
+        self.canvas.place(x=0, y=0)
+
+        #bg image
+        bg_img = Image.open(self.colors["backdrop"])
+        self.bg_img_tk = ImageTk.PhotoImage(bg_img)
+        self.canvas.create_image(0, 0, anchor="nw", image=self.bg_img_tk)
 
         #board title
-        self.label = ctk.CTkLabel(self, text = "🎉 Birthday! Soduku 🎉", 
+        self.label = ctk.CTkLabel(self, text = "🎉 Birthday! Sudoku 🎉", 
                                   font=("Arial", 42, "bold"), 
                                   bg_color=self.colors["opacity"])
         self.label.pack(pady=(55,10))
@@ -53,16 +64,18 @@ class App(ctk.CTk):
                 text_color=self.colors["button_text"],
                 fg_color=self.colors["birthday!_button"],
                 bg_color=self.colors["opacity"],
+                font=("Courier", 18, "bold"),
                 width=40,
                 command=lambda l=char: self.fill_selected(l)
             )
             btn.pack(side="left", padx=1)
             # pywinstyles.set_opacity(btn, color=self.colors["opacity"])
 
-        clear_btn = ctk.CTkButton(button_frame, text="CLEAR", 
+        clear_btn = ctk.CTkButton(button_frame, text="Clear", 
                                   text_color=self.colors["button_text"],
                                   fg_color=self.colors["clear"], 
                                   command=self.clear_selected,
+                                  font=("Arial", 16),
                                   bg_color="transparent")
         clear_btn.pack(side="left")
 
@@ -76,6 +89,16 @@ class App(ctk.CTk):
         #keep track of board:
         self.curr_board = [[self.entries[r][c].get().upper() for c in range(9)] for r in range(9)]
         self.selected_cell = None # keep track of r and c of selected cell
+
+        # #place cake:
+        self.cake = Cake()
+        cake_img = Image.open(self.cake.get_cake()).resize((500,500))
+        self.cake_img_tk = ImageTk.PhotoImage(cake_img)
+        self.canvas.create_image(960, 800, anchor="center", image=self.cake_img_tk)
+
+        #create and hide popups:
+        self.create_wrong_solution_popup()
+        self.hide_wrong_solution_popup()
 
     def build_grid(self):
         self.entries = [] 
@@ -135,7 +158,39 @@ class App(ctk.CTk):
     def check_solution(self):
         # onclick -> collect into 2d list and pass to valid_board for solution checking
         valid = self.board.valid_board(self.curr_board)
+        if not valid:
+            self.show_wrong_solution_popup()
+        #else:
         print(valid)
+
+    ##setup wrong solution popup
+    def create_wrong_solution_popup(self):        
+        self.wrong_popup = ctk.CTkLabel(
+            self,
+            text="",  # leave empty, we'll add widgets manually
+            # corner_radius=20,
+            fg_color=self.colors["wrong_popup"],
+            width=600,
+            height=150
+        )
+        self.wrong_popup.pack_propagate(False)
+        label = ctk.CTkLabel(self.wrong_popup, text="At least one square is wrong or empty :( try again!", 
+                             font=("Arial", 20, "bold"))
+        label.pack(padx=10, pady=20)
+
+        close_btn = ctk.CTkButton(self.wrong_popup, text="Close", command=self.hide_wrong_solution_popup,
+            font=("Arial", 16, "bold"), fg_color="#74adf8", bg_color=self.colors["opacity"])
+        close_btn.pack(pady=10)
+        pywinstyles.set_opacity(close_btn, color=self.colors["opacity"])
+
+    def show_wrong_solution_popup(self):
+        if not self.wrong_popup_visible:
+            self.wrong_popup.place(relx=0.5, rely=0.5, anchor="center")
+            self.wrong_popup_visible = True
+    def hide_wrong_solution_popup(self):
+        self.wrong_popup.place_forget()
+        self.wrong_popup_visible = False
+
 
 
     def fill_selected(self, char):
