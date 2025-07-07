@@ -14,7 +14,8 @@ class Cake():
         self.candles = 9
 
     def lose_candle(self):
-        self.candles -= 1
+        if self.candles >=1:
+            self.candles -= 1
 
     def get_cake(self):
         return "img/cake_" + str(self.candles) + ".png"
