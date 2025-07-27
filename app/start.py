@@ -1,13 +1,14 @@
 import customtkinter as ctk
 import sys
 import os
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
-from src.sudoku import SudokuBoard
+# sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
+from sudoku import SudokuBoard
 from board import Board
 from theme import THEME
+from utils import resource_path
 from PIL import Image
 from customtkinter import CTkImage
-from cake import Cake
+from end_screen import End
 from tkinter import Canvas, Tk, NW
 from PIL import ImageTk
 #for better styling/transparency
@@ -33,7 +34,8 @@ class App(ctk.CTk):
         self.canvas.place(x=0, y=0)
 
         #bg image
-        bg_img = Image.open(self.colors["backdrop"])
+        bg_img_path = resource_path(self.colors["backdrop"])
+        bg_img = Image.open(bg_img_path)
         self.bg_img_tk = ImageTk.PhotoImage(bg_img)
         self.bg_img_id= self.canvas.create_image(0, 0, anchor="nw", image=self.bg_img_tk)
 
@@ -69,24 +71,23 @@ class App(ctk.CTk):
     def run_board(self):
         self.theme_toggle.pack_forget()
         self.start_btn.pack_forget()
-        self.board = Board(self, self.theme_mode, self.canvas)
+        self.board = Board(root=self, theme=self.theme_mode, canvas=self.canvas, on_complete=self.on_complete)
 
+    def on_complete(self, cake_id):
+        self.label.pack_forget()
+        self.end = End(self, canvas=self.canvas, cake_id=cake_id)
 
     def set_theme(self, value): #live update of theme
         if value == "Light Mode":
             self.theme_mode = "light"
-            ctk.set_appearance_mode(app.theme_mode) #change ctk appearance
-            self.colors = THEME[self.theme_mode] #update self.colors
-            dark_img = Image.open(self.colors["backdrop"]) #update backdrop
-            self.bg_img_tk = ImageTk.PhotoImage(dark_img)
-            self.canvas.itemconfig(self.bg_img_id, image=self.bg_img_tk)
         elif value == "Dark Mode":
             self.theme_mode = "dark"
-            ctk.set_appearance_mode(app.theme_mode) #change ctk appearance
-            self.colors = THEME[self.theme_mode] #update self.colors
-            dark_img = Image.open(self.colors["backdrop"]) #update backdrop
-            self.bg_img_tk = ImageTk.PhotoImage(dark_img)
-            self.canvas.itemconfig(self.bg_img_id, image=self.bg_img_tk)
+        ctk.set_appearance_mode(app.theme_mode) #change ctk appearance
+        self.colors = THEME[self.theme_mode] #update self.colors
+        dark_img_path = resource_path(self.colors["backdrop"])
+        dark_img = Image.open(dark_img_path) #update backdrop
+        self.bg_img_tk = ImageTk.PhotoImage(dark_img)
+        self.canvas.itemconfig(self.bg_img_id, image=self.bg_img_tk)
 
 if __name__ == "__main__":
     app = App()
