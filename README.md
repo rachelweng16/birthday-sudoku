@@ -1,5 +1,5 @@
 # 🎂 Birthday Sudoku 🎉  
-A sweet twist on classic Sudoku
+A sweet twist on classic Sudoku :)
 
 <!-- ![sudoku-preview](screenshot.png) -->
 
